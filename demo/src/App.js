@@ -1,8 +1,22 @@
 import React from 'react';
+import ToneCurve from '../../src';
+
+const styles = {
+  toneCurve: {
+    area: {
+      root: {
+        //backgroundColor: '#ddd',
+      },
+    },
+  },
+};
 
 export const App = () => {
   return (
-    <h1>Hello React Demo App</h1>
+    <ToneCurve
+      size={420}
+      styles={styles.toneCurve}
+    />
   );
 };
 
