@@ -8,27 +8,26 @@ import { ToneCurveCurvePoint as CurvePoint } from './Curve/Point';
 
 const styles = {
   root: {
+    width: 'calc(100% - 16px)',
+    height: 'calc(100% - 16px)',
+    padding: 8,
+  },
+  container: {
     position: 'relative',
     width: '100%',
     height: '100%',
   },
   svg: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    width: 'calc(100% - 16px)',
-    height: 'calc(100% - 16px)',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
   },
   curve: {
     cursor: 'crosshair',
   },
-  points: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    width: 'calc(100% - 16px)',
-    height: 'calc(100% - 16px)',
-  },
+  
 };
 
 export const ToneCurveCurve = ({
@@ -130,8 +129,8 @@ export const ToneCurveCurve = ({
     pointsRef.current.splice(nextIndex, 0, {  
       x,
       y,
-      active: false,
-      focused: false,
+      active: true,
+      focused: true,
       protected: false,
       fixed: [],
     });
@@ -143,26 +142,28 @@ export const ToneCurveCurve = ({
     <div
       style={_styles.root}
     >
-      <svg
-        ref={svgRef}
-        width={size}
-        height={size}
-        viewBox="0 0 1 1"
-        style={_styles.svg}
-      >
-        <path
-          ref={pathRef}
-          d={path}
-          stroke="white"
-          strokeWidth={1.5 / size}
-          style={_styles.curve}
-          onMouseDown={createNewPoint}
-        />
-      </svg>
-
       <div
-        style={_styles.points}
+        style={_styles.container}
       >
+        <svg
+          ref={svgRef}
+          width={size}
+          height={size}
+          viewBox="0 0 1 1"
+          style={_styles.svg}
+        >
+          <path
+            ref={pathRef}
+            d={path}
+            stroke="white"
+            strokeWidth={2 / size}
+            fill="none"
+            pointerEvents="stroke"
+            style={_styles.curve}
+            onMouseDown={createNewPoint}
+          />
+        </svg>
+
         {points.map(({
             x,
             y,
