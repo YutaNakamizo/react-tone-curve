@@ -19,6 +19,9 @@ const styles = {
     width: 'calc(100% - 16px)',
     height: 'calc(100% - 16px)',
   },
+  curve: {
+    cursor: 'crosshair',
+  },
   points: {
     position: 'absolute',
     top: 8,
@@ -79,16 +82,59 @@ export const ToneCurveCurve = ({
     points,
   ]);
   
-  const handlePointDrag = (e, index) => {
+  const handlePointMouseDown = (e, index) => {  
+    for(const p of pointsRef.current) p.active = false;
     const point = pointsRef.current[index];
+    point.active = true;
+    point.focused = true;
+    updatePoints();
+  };
+  useEffect(() => {
+    const handlePointMouseMove = e => {
+      const point = pointsRef.current.find(p => p.focused);
+      if(!point) return;
+      const {
+        top,
+        left,
+      } = svgRef.current.getBoundingClientRect();
+      const x = point.fixed?.includes('x') ? point.x : (e.pageX - (window.pageXOffset + left)) / (size - 16);
+      const y = point.fixed?.includes('y') ? point.y : 1 - ((e.pageY - (window.pageYOffset + top)) / (size - 16));
+      point.x = x > 1 ? 1 : (x < 0 ? 0 : x);
+      point.y = y > 1 ? 1 : (y < 0 ? 0 : y);
+      updatePoints();
+    };
+    const handlePointMouseUp = (e, index) => {
+      const point = pointsRef.current.find(p => p.focused);
+      if(!point) return;
+      point.focused = false;
+      updatePoints();
+    };
+
+    window.addEventListener('mousemove', handlePointMouseMove);
+    window.addEventListener('mouseup', handlePointMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handlePointMouseMove);
+      window.removeEventListener('mouseup', handlePointMouseUp);
+    };
+  }, []);
+
+  const createNewPoint = e => {
+    console.log(e);
     const {
       top,
       left,
     } = svgRef.current.getBoundingClientRect();
-    const x = point.fixed?.includes('x') ? point.x : (e.pageX - (window.pageXOffset + left)) / (size - 16);
-    const y = point.fixed?.includes('y') ? point.y : 1 - ((e.pageY - (window.pageYOffset + top)) / (size - 16));
-    point.x = x > 1 ? 1 : (x < 0 ? 0 : x);
-    point.y = y > 1 ? 1 : (y < 0 ? 0 : y);
+    const x = (e.pageX - (window.pageXOffset + left)) / (size - 16);
+    const y = 1 - ((e.pageY - (window.pageYOffset + top)) / (size - 16));
+    const nextIndex = pointsRef.current.findIndex(p => p.x > x);
+    pointsRef.current.splice(nextIndex, 0, {  
+      x,
+      y,
+      active: false,
+      focused: false,
+      protected: false,
+      fixed: [],
+    });
     updatePoints();
   };
 
@@ -108,8 +154,9 @@ export const ToneCurveCurve = ({
           ref={pathRef}
           d={path}
           stroke="white"
-          strokeWidth={1 / size}
+          strokeWidth={1.5 / size}
           style={_styles.curve}
+          onMouseDown={createNewPoint}
         />
       </svg>
 
@@ -129,7 +176,7 @@ export const ToneCurveCurve = ({
             y={y}
             active={active}
             focused={focused}
-            onDrag={e => handlePointDrag(e, index)}
+            onMouseDown={e => handlePointMouseDown(e, index)}
           />
         ))}
       </div>

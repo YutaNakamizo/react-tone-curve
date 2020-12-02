@@ -23,7 +23,6 @@ export const ToneCurveCurvePoint = ({
         backgroundColor: (active || focused) ? '#fff' : '#000',
         cursor: 'crosshair',
       }}
-      onDragStart={() => false}
       {...props}
     />
   );
