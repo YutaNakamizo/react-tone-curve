@@ -90,7 +90,11 @@ export const ToneCurveCurve = ({
   };
   useEffect(() => {
     const handlePointMouseMove = e => {
-      const point = pointsRef.current.find(p => p.focused);
+      const pointIndex = pointsRef.current.findIndex(p => p.focused);
+      if(pointIndex < 0 || pointIndex + 1 > pointsRef.current.length) return;
+      const point = pointsRef.current[pointIndex];
+      const prevPoint = (pointIndex === 0) ? null : pointsRef.current[pointIndex - 1];
+      const nextPoint = (pointIndex + 1 === pointsRef.current.length) ? null : pointsRef.current[pointIndex + 1];
       if(!point) return;
       const {
         top,
@@ -100,6 +104,12 @@ export const ToneCurveCurve = ({
       const y = point.fixed?.includes('y') ? point.y : 1 - ((e.pageY - (window.pageYOffset + top)) / (size - 16));
       point.x = x > 1 ? 1 : (x < 0 ? 0 : x);
       point.y = y > 1 ? 1 : (y < 0 ? 0 : y);
+      if(prevPoint !== null && point.x < prevPoint.x) {
+        pointsRef.current[pointIndex - 1] = pointsRef.current.splice(pointIndex, 1, pointsRef.current[pointIndex - 1])[0];
+      }
+      else if(nextPoint !== null && point.x > nextPoint.x) {  
+        pointsRef.current[pointIndex] = pointsRef.current.splice(pointIndex + 1, 1, pointsRef.current[pointIndex])[0];
+      }
       updatePoints();
     };
     const handlePointMouseUp = (e, index) => {
