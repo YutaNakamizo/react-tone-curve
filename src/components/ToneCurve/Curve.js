@@ -100,16 +100,23 @@ export const ToneCurveCurve = ({
         top,
         left,
       } = svgRef.current.getBoundingClientRect();
-      const x = point.fixed?.includes('x') ? point.x : (e.pageX - (window.pageXOffset + left)) / (size - 16);
-      const y = point.fixed?.includes('y') ? point.y : 1 - ((e.pageY - (window.pageYOffset + top)) / (size - 16));
-      point.x = x > 1 ? 1 : (x < 0 ? 0 : x);
-      point.y = y > 1 ? 1 : (y < 0 ? 0 : y);
-      if(prevPoint !== null && point.x < prevPoint.x) {
-        pointsRef.current[pointIndex - 1] = pointsRef.current.splice(pointIndex, 1, pointsRef.current[pointIndex - 1])[0];
+      const sanitize = t => (t > 1 ? 1 : (t < 0 ? 0 : t));
+      const x = sanitize(point.fixed?.includes('x') ? point.x : (e.pageX - (window.pageXOffset + left)) / (size - 16));
+      const y = sanitize(point.fixed?.includes('y') ? point.y : 1 - ((e.pageY - (window.pageYOffset + top)) / (size - 16)));
+      if(prevPoint !== null) {
+        if(x === prevPoint.x) return;
+        if(x < prevPoint.x) {
+          pointsRef.current[pointIndex - 1] = pointsRef.current.splice(pointIndex, 1, pointsRef.current[pointIndex - 1])[0];
+        }
       }
-      else if(nextPoint !== null && point.x > nextPoint.x) {  
-        pointsRef.current[pointIndex] = pointsRef.current.splice(pointIndex + 1, 1, pointsRef.current[pointIndex])[0];
+      if(nextPoint !== null) {
+        if(x === nextPoint.x) return;
+        if(x > nextPoint.x) {  
+          pointsRef.current[pointIndex] = pointsRef.current.splice(pointIndex + 1, 1, pointsRef.current[pointIndex])[0];
+        }
       }
+      point.x = x;
+      point.y = y;
       updatePoints();
     };
     const handlePointMouseUp = (e, index) => {
@@ -128,7 +135,7 @@ export const ToneCurveCurve = ({
   }, []);
 
   const createNewPoint = e => {
-    console.log(e);
+    for(const p of pointsRef.current) p.active = false;
     const {
       top,
       left,
